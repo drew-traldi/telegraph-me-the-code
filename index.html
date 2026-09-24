@@ -1,0 +1,77 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Telegraph — Morse Code Translator</title>
+<meta name="description" content="Translate text to Morse code and back, hear it played, and tap your own messages on a telegraph key.">
+<meta property="og:title" content="Telegraph">
+<meta property="og:description" content="Translate text to Morse code and back, hear it played, and tap your own messages on a telegraph key.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://drew-traldi.github.io/telegraph-me-the-code/">
+<meta name="twitter:card" content="summary">
+<meta name="author" content="Drew Traldi">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%F0%9F%93%A1%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Cutive+Mono&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;font-family:'Old Standard TT',Georgia,serif;color:#2b1e10;padding:30px 16px;background:#5a3a1e;background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 3px,transparent 3px 40px),linear-gradient(#6d4726,#3e2712)}
+.w{max-width:900px;margin:auto}
+.form{background:#efe3c4;padding:26px clamp(16px,4vw,40px);box-shadow:0 20px 40px rgba(0,0,0,.5);position:relative;background-image:radial-gradient(circle at 90% 10%,rgba(150,100,40,.15),transparent 30%)}
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px double #2b1e10;padding-bottom:10px;flex-wrap:wrap;gap:10px}
+h1{font-size:clamp(28px,5vw,44px);letter-spacing:3px;font-weight:700}
+h1 small{display:block;font-size:13px;letter-spacing:6px;font-weight:400;font-style:italic}
+.no{font-family:'Cutive Mono';font-size:13px;text-align:right}
+.lbl{font-size:12px;letter-spacing:3px;text-transform:uppercase;margin:18px 0 6px;display:flex;justify-content:space-between}
+textarea{width:100%;min-height:110px;background:transparent;border:0;border-bottom:1px solid #2b1e10;font:22px/1.6 'Cutive Mono',monospace;color:#2b1e10;outline:none;resize:vertical;background-image:repeating-linear-gradient(transparent 0 34px,rgba(43,30,16,.2) 34px 35px)}
+#m{letter-spacing:2px;font-size:20px}
+.ctrl{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.ctrl button{font:700 14px 'Old Standard TT';letter-spacing:2px;text-transform:uppercase;background:#2b1e10;color:#efe3c4;border:0;padding:10px 16px;cursor:pointer}
+.ctrl label{font-size:14px;display:flex;gap:6px;align-items:center}
+.ctrl input[type=range]{accent-color:#2b1e10;width:110px}
+.lamp{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#7a5a2a,#3a2410);border:3px solid #2b1e10;transition:background .03s,box-shadow .03s}
+.lamp.on{background:radial-gradient(circle at 40% 35%,#fff7c0,#ffcf40);box-shadow:0 0 30px #ffcf40}
+.key{margin:26px auto 0;display:flex;flex-direction:column;align-items:center;gap:8px;user-select:none}
+.key .base{width:260px;height:70px;background:linear-gradient(#8b5a2b,#5a3a1e);border-radius:8px;position:relative;box-shadow:0 10px 20px rgba(0,0,0,.4);cursor:pointer}
+.key .arm{position:absolute;left:30px;right:50px;top:14px;height:14px;background:linear-gradient(#e0c080,#9a7430);border-radius:7px;transform-origin:10% 50%;transition:transform .05s}
+.key .knob{position:absolute;right:30px;top:-8px;width:44px;height:30px;border-radius:50%/40%;background:radial-gradient(circle at 40% 30%,#555,#111)}
+.key.down .arm{transform:rotate(3deg) translateY(4px)}.key.down .knob{top:-2px}
+.key p{font-style:italic;font-size:14px;color:#efe3c4}
+#dec{font:22px 'Cutive Mono';min-height:34px;color:#efe3c4;text-align:center;letter-spacing:2px}
+.chart{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:4px;font-family:'Cutive Mono';font-size:14px}
+.chart div{border:1px solid rgba(43,30,16,.3);padding:3px 6px;display:flex;justify-content:space-between;cursor:pointer}
+.chart div:hover{background:#2b1e10;color:#efe3c4}
+.chart b{font-family:'Old Standard TT'}
+</style></head><body><div class="w">
+<div class="form">
+<div class="hdr"><h1>TELEGRAPH<small>WESTERN MORSE COMPANY</small></h1><div class="no">FORM Nº 1844<br><span id="dt"></span></div></div>
+<div class="lbl"><span>Message — plain text</span><span id="cc"></span></div>
+<textarea id="t" spellcheck="false">SOS WHAT HATH GOD WROUGHT</textarea>
+<div class="lbl"><span>Transmission — morse code</span><span>( / = word gap )</span></div>
+<textarea id="m" spellcheck="false"></textarea>
+<div class="ctrl"><button id="play">▶ Transmit</button><button id="stop">■ Stop</button><div class="lamp" id="lamp"></div><label>Speed <input type="range" id="wpm" min="5" max="35" value="18"><span id="wv">18</span> wpm</label><label>Tone <input type="range" id="hz" min="400" max="900" value="650"></label><button id="copy">Copy code</button></div>
+<div class="chart" id="chart"></div>
+</div>
+<div class="key" id="key"><div class="base"><div class="arm"></div><div class="knob"></div></div><p>Tap the key (or hold SPACE) to send by hand — it decodes as you go</p><div id="dec"></div></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);$('dt').textContent=new Date().toLocaleDateString();
+const C={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',0:'-----',1:'.----',2:'..---',3:'...--',4:'....-',5:'.....',6:'-....',7:'--...',8:'---..',9:'----.','.':'.-.-.-',',':'--..--','?':'..--..',"'":'.----.','!':'-.-.--','/':'-..-.','(':'-.--.',')':'-.--.-','&':'.-...',':':'---...',';':'-.-.-.','=':'-...-','+':'.-.-.','-':'-....-','"':'.-..-.','@':'.--.-.'};
+const R=Object.fromEntries(Object.entries(C).map(([k,v])=>[v,k]));
+const enc=s=>s.toUpperCase().trim().split(/\s+/).map(w=>[...w].map(c=>C[c]||'').filter(Boolean).join(' ')).join(' / ');
+const dec=s=>s.trim().split(/\s*\/\s*|\s{3,}/).map(w=>w.split(/\s+/).map(c=>R[c]||(c?'�':'')).join('')).join(' ');
+$('t').oninput=()=>{$('m').value=enc($('t').value);$('cc').textContent=$('t').value.length+' chars'};$('m').oninput=()=>{$('t').value=dec($('m').value.replace(/[·•]/g,'.').replace(/[–—_]/g,'-'))};
+$('chart').innerHTML=Object.entries(C).slice(0,36).map(([k,v])=>`<div data-k="${k}"><b>${k}</b><span>${v}</span></div>`).join('');
+$('chart').querySelectorAll('div').forEach(d=>d.onclick=()=>{$('t').value+=d.dataset.k;$('t').oninput()});
+let ac,playing=false,timers=[];function ctx(){ac=ac||new AudioContext();ac.resume();return ac}
+function tone(on){if(on){ctx();if(window.osc)return;const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=+$('hz').value;g.gain.setValueAtTime(0,ac.currentTime);g.gain.linearRampToValueAtTime(.2,ac.currentTime+.005);o.connect(g).connect(ac.destination);o.start();window.osc=[o,g]}else if(window.osc){const[o,g]=window.osc;g.gain.linearRampToValueAtTime(0,ac.currentTime+.005);o.stop(ac.currentTime+.01);window.osc=null}$('lamp').classList.toggle('on',on)}
+function play(){stop();const u=1200/+$('wpm').value;let t=0;const code=$('m').value;playing=true;
+ for(const ch of code){if(ch==='.'||ch==='-'){const d=ch==='.'?u:3*u;timers.push(setTimeout(()=>tone(true),t),setTimeout(()=>tone(false),t+d));t+=d+u}else if(ch===' ')t+=2*u;else if(ch==='/')t+=2*u}
+ timers.push(setTimeout(()=>{playing=false},t))}
+function stop(){timers.forEach(clearTimeout);timers=[];tone(false);playing=false}
+$('play').onclick=play;$('stop').onclick=stop;$('wpm').oninput=()=>$('wv').textContent=$('wpm').value;
+$('copy').onclick=()=>navigator.clipboard.writeText($('m').value);
+let down=0,cur='',gapT,wordT;const unit=()=>1200/+$('wpm').value;
+function kd(){if(down)return;down=performance.now();$('key').classList.add('down');tone(true);clearTimeout(gapT);clearTimeout(wordT)}
+function ku(){if(!down)return;const d=performance.now()-down;down=0;$('key').classList.remove('down');tone(false);cur+=d<unit()*2?'.':'-';$('dec').textContent=($('dec').dataset.t||'')+' '+cur;
+ gapT=setTimeout(()=>{$('dec').dataset.t=($('dec').dataset.t||'')+(R[cur]||'?');cur='';$('dec').textContent=$('dec').dataset.t;wordT=setTimeout(()=>{$('dec').dataset.t+=' '},unit()*4)},unit()*3)}
+const k=$('key').querySelector('.base');k.onpointerdown=e=>{e.preventDefault();kd()};addEventListener('pointerup',ku);
+addEventListener('keydown',e=>{if(e.code==='Space'&&e.target.tagName!=='TEXTAREA'){e.preventDefault();if(!e.repeat)kd()}if(e.key==='Escape'){$('dec').dataset.t='';$('dec').textContent=''}});addEventListener('keyup',e=>{if(e.code==='Space'&&e.target.tagName!=='TEXTAREA')ku()});
+$('t').oninput();
+</script></body></html>
