@@ -28,7 +28,7 @@ textarea{width:100%;min-height:110px;background:transparent;border:0;border-bott
 .lamp{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#7a5a2a,#3a2410);border:3px solid #2b1e10;transition:background .03s,box-shadow .03s}
 .lamp.on{background:radial-gradient(circle at 40% 35%,#fff7c0,#ffcf40);box-shadow:0 0 30px #ffcf40}
 .key{margin:26px auto 0;display:flex;flex-direction:column;align-items:center;gap:8px;user-select:none}
-.key .base{width:260px;height:70px;background:linear-gradient(#8b5a2b,#5a3a1e);border-radius:8px;position:relative;box-shadow:0 10px 20px rgba(0,0,0,.4);cursor:pointer}
+.key .base{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;width:260px;height:70px;background:linear-gradient(#8b5a2b,#5a3a1e);border-radius:8px;position:relative;box-shadow:0 10px 20px rgba(0,0,0,.4);cursor:pointer}
 .key .arm{position:absolute;left:30px;right:50px;top:14px;height:14px;background:linear-gradient(#e0c080,#9a7430);border-radius:7px;transform-origin:10% 50%;transition:transform .05s}
 .key .knob{position:absolute;right:30px;top:-8px;width:44px;height:30px;border-radius:50%/40%;background:radial-gradient(circle at 40% 30%,#555,#111)}
 .key.down .arm{transform:rotate(3deg) translateY(4px)}.key.down .knob{top:-2px}
@@ -36,6 +36,8 @@ textarea{width:100%;min-height:110px;background:transparent;border:0;border-bott
 #dec{font:22px 'Cutive Mono';min-height:34px;color:#efe3c4;text-align:center;letter-spacing:2px}
 .chart{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:4px;font-family:'Cutive Mono';font-size:14px}
 .chart div{border:1px solid rgba(43,30,16,.3);padding:3px 6px;display:flex;justify-content:space-between;cursor:pointer}
+.charttg{display:none;margin-top:18px;font:700 13px 'Old Standard TT';letter-spacing:2px;text-transform:uppercase;background:none;color:#2b1e10;border:1px solid #2b1e10;padding:10px 14px;min-height:44px;cursor:pointer}
+@media (max-width:640px){.charttg{display:inline-block}.chart:not(.open){display:none}}
 .chart div:hover{background:#2b1e10;color:#efe3c4}
 .chart b{font-family:'Old Standard TT'}
 </style></head><body><div class="w">
@@ -46,7 +48,7 @@ textarea{width:100%;min-height:110px;background:transparent;border:0;border-bott
 <div class="lbl"><span>Transmission — morse code</span><span>( / = word gap )</span></div>
 <textarea id="m" spellcheck="false"></textarea>
 <div class="ctrl"><button id="play">▶ Transmit</button><button id="stop">■ Stop</button><div class="lamp" id="lamp"></div><label>Speed <input type="range" id="wpm" min="5" max="35" value="18"><span id="wv">18</span> wpm</label><label>Tone <input type="range" id="hz" min="400" max="900" value="650"></label><button id="copy">Copy code</button></div>
-<div class="chart" id="chart"></div>
+<button class="charttg" id="charttg" type="button" aria-expanded="false" aria-controls="chart">Show Morse chart</button><div class="chart" id="chart"></div>
 </div>
 <div class="key" id="key"><div class="base"><div class="arm"></div><div class="knob"></div></div><p>Tap the key (or hold SPACE) to send by hand — it decodes as you go</p><div id="dec"></div></div>
 </div>
@@ -71,7 +73,8 @@ let down=0,cur='',gapT,wordT;const unit=()=>1200/+$('wpm').value;
 function kd(){if(down)return;down=performance.now();$('key').classList.add('down');tone(true);clearTimeout(gapT);clearTimeout(wordT)}
 function ku(){if(!down)return;const d=performance.now()-down;down=0;$('key').classList.remove('down');tone(false);cur+=d<unit()*2?'.':'-';$('dec').textContent=($('dec').dataset.t||'')+' '+cur;
  gapT=setTimeout(()=>{$('dec').dataset.t=($('dec').dataset.t||'')+(R[cur]||'?');cur='';$('dec').textContent=$('dec').dataset.t;wordT=setTimeout(()=>{$('dec').dataset.t+=' '},unit()*4)},unit()*3)}
-const k=$('key').querySelector('.base');k.onpointerdown=e=>{e.preventDefault();kd()};addEventListener('pointerup',ku);
+const k=$('key').querySelector('.base');k.onpointerdown=e=>{e.preventDefault();kd()};addEventListener('pointerup',ku);addEventListener('pointercancel',ku);
+$('charttg').onclick=()=>{const o=$('chart').classList.toggle('open');$('charttg').setAttribute('aria-expanded',o);$('charttg').textContent=o?'Hide Morse chart':'Show Morse chart'};
 addEventListener('keydown',e=>{if(e.code==='Space'&&e.target.tagName!=='TEXTAREA'){e.preventDefault();if(!e.repeat)kd()}if(e.key==='Escape'){$('dec').dataset.t='';$('dec').textContent=''}});addEventListener('keyup',e=>{if(e.code==='Space'&&e.target.tagName!=='TEXTAREA')ku()});
 $('t').oninput();
 </script></body></html>
